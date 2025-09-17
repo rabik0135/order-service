@@ -8,7 +8,7 @@ spring:
       repositories:
         enabled: true
   datasource:
-    url: jdbc:postgresql://localhost:5432/order_db
+    url: jdbc:postgresql://localhost:5433/order_db
     username: ivan
     password: orderroot
   jpa:

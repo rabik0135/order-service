@@ -1,6 +1,7 @@
 package com.rabinchuk.orderservice.mapper;
 
 import com.rabinchuk.orderservice.dto.ItemResponseDto;
+import com.rabinchuk.orderservice.dto.OrderItemResponseDto;
 import com.rabinchuk.orderservice.dto.OrderResponseDto;
 import com.rabinchuk.orderservice.model.Order;
 import com.rabinchuk.orderservice.model.OrderItem;
@@ -16,5 +17,7 @@ public interface OrderMapper {
 
     @Mapping(source = "item", target = ".")
     ItemResponseDto itemFromOrderItem(OrderItem orderItem);
+
+    OrderItemResponseDto toDto(OrderItem orderItem);
 
 }

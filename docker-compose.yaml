@@ -1,11 +1,17 @@
+networks:
+  default:
+    external:
+      name: microservices-network
+
 services:
-  postgres:
+  postgres_order_db:
     image: postgres:17
+    container_name: postgres_order_db
     restart: "no"
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_order_data:/var/lib/postgresql/data
     environment:
       POSTGRES_USER: ivan
       POSTGRES_PASSWORD: orderroot
@@ -17,4 +23,4 @@ services:
       start_period: 10s
       retries: 5
 volumes:
-  postgres_data:
+  postgres_order_data:
