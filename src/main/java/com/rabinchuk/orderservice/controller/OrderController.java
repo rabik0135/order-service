@@ -6,7 +6,9 @@ import com.rabinchuk.orderservice.dto.OrderWithUserResponseDto;
 import com.rabinchuk.orderservice.dto.UpdateOrderRequestDto;
 import com.rabinchuk.orderservice.model.OrderStatus;
 import com.rabinchuk.orderservice.service.OrderService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -46,13 +48,13 @@ public class OrderController implements OrderApi {
     }
 
     @PostMapping
-    public ResponseEntity<OrderWithUserResponseDto> create(@RequestBody CreateOrderRequestDto c) {
+    public ResponseEntity<OrderWithUserResponseDto> create(@Valid @RequestBody CreateOrderRequestDto c) {
         OrderWithUserResponseDto orderWithUserResponseDto = orderService.create(c);
-        return ResponseEntity.ok(orderWithUserResponseDto);
+        return new ResponseEntity<>(orderWithUserResponseDto, HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<OrderWithUserResponseDto> updateById(@PathVariable Long id, @RequestBody UpdateOrderRequestDto u) {
+    public ResponseEntity<OrderWithUserResponseDto> updateById(@PathVariable Long id, @Valid @RequestBody UpdateOrderRequestDto u) {
         OrderWithUserResponseDto orderWithUserResponseDto = orderService.updateById(id, u);
         return ResponseEntity.ok(orderWithUserResponseDto);
     }

@@ -1,0 +1,6 @@
+{
+  "path": "/api/orders/1321",
+  "errorMessage": "Order with id 1321 not found",
+  "statusCode": 404,
+  "errors": null
+}

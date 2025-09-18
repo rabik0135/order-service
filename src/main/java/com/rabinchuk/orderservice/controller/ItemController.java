@@ -4,7 +4,9 @@ import com.rabinchuk.orderservice.controller.api.ItemApi;
 import com.rabinchuk.orderservice.dto.ItemRequestDto;
 import com.rabinchuk.orderservice.dto.ItemResponseDto;
 import com.rabinchuk.orderservice.service.ItemService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -44,13 +46,13 @@ public class ItemController implements ItemApi {
     }
 
     @PostMapping
-    public ResponseEntity<ItemResponseDto> create(@RequestBody ItemRequestDto itemRequestDto) {
+    public ResponseEntity<ItemResponseDto> create(@Valid @RequestBody ItemRequestDto itemRequestDto) {
         ItemResponseDto itemResponseDto = itemService.create(itemRequestDto);
-        return ResponseEntity.ok(itemResponseDto);
+        return new ResponseEntity<>(itemResponseDto, HttpStatus.CREATED);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ItemResponseDto> updateById(@PathVariable Long id, @RequestBody ItemRequestDto itemRequestDto) {
+    public ResponseEntity<ItemResponseDto> updateById(@PathVariable Long id, @Valid @RequestBody ItemRequestDto itemRequestDto) {
         ItemResponseDto itemResponseDto = itemService.updateById(id, itemRequestDto);
         return ResponseEntity.ok(itemResponseDto);
     }

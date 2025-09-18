@@ -1,0 +1,24 @@
+{
+  "order": {
+    "id": 1,
+    "userId": 1,
+    "status": "COMPLETED",
+    "items": [
+      {
+        "item": {
+          "id": 1,
+          "name": "Item",
+          "price": 10
+        },
+        "quantity": 88
+      }
+    ]
+  },
+  "user": {
+    "id": 1,
+    "name": "John",
+    "surname": "Doe",
+    "birthDate": "1980-01-01",
+    "email": "john.doe@example.com"
+  }
+}

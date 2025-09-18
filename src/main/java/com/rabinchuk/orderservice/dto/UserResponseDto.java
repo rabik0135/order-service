@@ -1,9 +1,11 @@
 package com.rabinchuk.orderservice.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Builder;
 
 import java.time.LocalDate;
 
+@Builder
 @Schema(description = "DTO representing user information")
 public record UserResponseDto(
         @Schema(description = "Unique identifier of the user", example = "101")

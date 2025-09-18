@@ -52,6 +52,7 @@ public class Order {
     private LocalDateTime creationDate;
 
     @ToString.Exclude
+    @Builder.Default
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<OrderItem> orderItems = new LinkedHashSet<>();
 

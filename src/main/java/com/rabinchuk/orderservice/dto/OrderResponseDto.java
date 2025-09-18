@@ -2,10 +2,12 @@ package com.rabinchuk.orderservice.dto;
 
 import com.rabinchuk.orderservice.model.OrderStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Builder;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Builder
 @Schema(description = "DTO representing the core details of an order")
 public record OrderResponseDto(
         @Schema(description = "Unique identifier of the order", example = "55")

@@ -5,8 +5,11 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import lombok.Builder;
 
 import java.util.List;
+
+@Builder
 @Schema(description = "DTO for creating a new order")
 public record CreateOrderRequestDto(
         @Schema(description = "ID of the user placing the order", example = "101")

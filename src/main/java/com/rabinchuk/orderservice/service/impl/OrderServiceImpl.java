@@ -106,6 +106,11 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional(readOnly = true)
     public List<OrderWithUserResponseDto> getByUserId(Long userId) {
+        List<UserResponseDto> userResponseDto = userClient.getUsersByIds(List.of(userId));
+        if (userResponseDto.isEmpty()) {
+            throw new EntityNotFoundException("User with id " + userId + " not found");
+        }
+
         List<Order> orders = orderRepository.findAllByUserId(userId);
         return enrichOrdersWithUserData(orders);
     }
@@ -139,6 +144,10 @@ public class OrderServiceImpl implements OrderService {
                 .map(Order::getUserId)
                 .distinct()
                 .toList();
+
+        if (userIds.isEmpty()) {
+            throw new EntityNotFoundException("User with id " + userIds + " not found");
+        }
 
         Map<Long, UserResponseDto> userResponseDtoMap = userClient.getUsersByIds(userIds)
                 .stream()

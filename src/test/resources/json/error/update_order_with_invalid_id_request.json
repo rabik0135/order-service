@@ -1,0 +1,9 @@
+{
+  "orderStatus": "DELIVERED",
+  "items": [
+    {
+      "itemId": 1,
+      "quantity": 2
+    }
+  ]
+}
