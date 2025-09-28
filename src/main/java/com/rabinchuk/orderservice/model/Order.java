@@ -41,11 +41,11 @@ public class Order {
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @Column(name = "user_id",  nullable = false)
+    @Column(name = "user_id", nullable = false)
     private Long userId;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status",  nullable = false)
+    @Column(name = "status", nullable = false)
     private OrderStatus orderStatus;
 
     @Column(name = "creation_date", nullable = false)

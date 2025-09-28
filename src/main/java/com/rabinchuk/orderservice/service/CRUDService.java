@@ -2,7 +2,7 @@ package com.rabinchuk.orderservice.service;
 
 import java.util.List;
 
-public interface CRUDService <T, C, U>{
+public interface CRUDService<T, C, U> {
 
     List<T> getAll();
 

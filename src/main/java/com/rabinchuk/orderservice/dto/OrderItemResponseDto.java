@@ -11,4 +11,5 @@ public record OrderItemResponseDto(
 
         @Schema(description = "Quantity of this item in the order", example = "3")
         Integer quantity
-) {}
+) {
+}

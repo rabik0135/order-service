@@ -11,15 +11,15 @@ services:
     image: order-service:latest
     container_name: order-service
     ports:
-      - "${ORDER_APP_PORT}:8081"
+      - "8081:8081"
     depends_on:
       postgres-order-db:
         condition: service_healthy
     environment:
       SPRING_DATASOURCE_URL: "jdbc:postgresql://postgres-order-db:5432/${POSTGRES_ORDER_DB}"
-      SPRING_DATASOURCE_USERNAME: "${POSTGRES_ORDER_USER}"
-      SPRING_DATASOURCE_PASSWORD: "${POSTGRES_ORDER_PASSWORD}"
-      USER_SERVICE_URL: "${USER_SERVICE_DOCKER_URL}/api/users"
+      SPRING_DATASOURCE_USERNAME: "${POSTGRES_USER}"
+      SPRING_DATASOURCE_PASSWORD: "${POSTGRES_PASSWORD}"
+      USER_SERVICE_URL: "http://user-service:8080/api/users"
       MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health
       MANAGEMENT_ENDPOINT_HEALTH_PROBES_ENABLED: true
     healthcheck:
@@ -34,7 +34,7 @@ services:
     container_name: "postgres-order-db"
     restart: "no"
     ports:
-      - "${ORDER_DB_PORT}:5432"
+      - "5433:5432"
     volumes:
       - postgres_order_data:/var/lib/postgresql/data
     environment:

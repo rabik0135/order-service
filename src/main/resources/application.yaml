@@ -1,21 +1,28 @@
 server:
   port: 8081
+
 spring:
   application:
     name: order-service
-  data:
-    jpa:
-      repositories:
-        enabled: true
   datasource:
     url: jdbc:postgresql://localhost:5433/order_db
-    username: ivan
-    password: orderroot
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
   jpa:
     hibernate:
       ddl-auto: none
     show-sql: true
   liquibase:
     change-log: classpath:/db/changelog/db.changelog-master.xml
+  management:
+    endpoints:
+      web:
+        exposure:
+          include: health
+    endpoint:
+      health:
+        probes:
+          enabled: true
+
 user-service:
   url: http://user-service:8080

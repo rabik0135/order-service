@@ -215,7 +215,7 @@ public class OrderControllerTest extends AbstractIntegrationTest {
 
         @Test
         @DisplayName("Update order by invalid id should return exception")
-        public void testUpdateUserByInvalidIdShouldReturnException() throws Exception {
+        public void testUpdateOrderByInvalidIdShouldReturnException() throws Exception {
             String updateOrderRequestJson = AbstractIntegrationTest.readStringFromSource("json/error/update_order_with_invalid_id_request.json");
 
             mockMvc.perform(put("/api/orders/1321")
@@ -227,7 +227,7 @@ public class OrderControllerTest extends AbstractIntegrationTest {
 
         @Test
         @DisplayName("Update order with invalid fields should return exception")
-        public void testUpdateUserByInvalidFieldsShouldReturnException() throws Exception {
+        public void testUpdateOrderByInvalidFieldsShouldReturnException() throws Exception {
             String updateOrderRequestJson = AbstractIntegrationTest.readStringFromSource("json/error/update_order_with_invalid_fields_request.json");
 
             mockMvc.perform(put("/api/orders/1321")
@@ -239,7 +239,7 @@ public class OrderControllerTest extends AbstractIntegrationTest {
 
         @Test
         @DisplayName("Delete order by invalid id should return exception")
-        public void testDeleteUserByInvalidIdShouldReturnException() throws Exception {
+        public void testDeleteOrderByInvalidIdShouldReturnException() throws Exception {
             mockMvc.perform(delete("/api/orders/1321"))
                     .andExpect(status().isNotFound())
                     .andExpect(content().json(AbstractIntegrationTest.readStringFromSource("json/error/delete_order_by_id_not_found_response.json"), false));
@@ -283,7 +283,7 @@ public class OrderControllerTest extends AbstractIntegrationTest {
     }
 
     private void stubUserClient(UserResponseDto userToReturn) throws JsonProcessingException {
-        wireMock.stubFor(WireMock.get(urlPathEqualTo("/api/users/getByIds")) // Change this line
+        wireMock.stubFor(WireMock.get(urlPathEqualTo("/api/users/getByIds"))
                 .withQueryParam("ids", containing(String.valueOf(userToReturn.id())))
                 .willReturn(aResponse()
                         .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)

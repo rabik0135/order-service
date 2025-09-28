@@ -22,4 +22,5 @@ public record UserResponseDto(
 
         @Schema(description = "User's email address", example = "john.doe@example.com")
         String email
-) {}
+) {
+}

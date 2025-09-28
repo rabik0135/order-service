@@ -88,6 +88,13 @@ public interface OrderApi {
     ResponseEntity<List<OrderWithUserResponseDto>> getByUserId(
             @Parameter(description = "ID of the user", required = true) @PathVariable Long userId);
 
+    @Operation(summary = "Get orders by user email", description = "Returns all orders placed by a specific user.")
+    @ApiResponse(responseCode = "200", description = "Successfully retrieved the list of orders",
+            content = @Content(mediaType = "application/json",
+                    schema = @Schema(implementation = OrderWithUserResponseDto.class)))
+    ResponseEntity<List<OrderWithUserResponseDto>> getByUserEmail(
+            @Parameter(description = "Email of the user", required = true) @PathVariable String email);
+
     @Operation(summary = "Update order status", description = "Updates the status of a specific order.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Order status updated successfully",
@@ -98,4 +105,5 @@ public interface OrderApi {
     ResponseEntity<OrderWithUserResponseDto> updateOrderStatus(
             @Parameter(description = "ID of the order", required = true) @PathVariable Long orderId,
             @Parameter(description = "The new status for the order", required = true) @RequestParam OrderStatus orderStatus);
+
 }

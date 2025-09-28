@@ -77,6 +77,12 @@ public class OrderController implements OrderApi {
         return ResponseEntity.ok(orderWithUserResponseDtos);
     }
 
+    @GetMapping("/getByUserEmail/{email}")
+    public ResponseEntity<List<OrderWithUserResponseDto>> getByUserEmail(@PathVariable String email) {
+        List<OrderWithUserResponseDto> orderWithUserResponseDtos = orderService.getByUserEmail(email);
+        return ResponseEntity.ok(orderWithUserResponseDtos);
+    }
+
     @PutMapping("/updateStatus/{orderId}")
     public ResponseEntity<OrderWithUserResponseDto> updateOrderStatus(@PathVariable Long orderId, @RequestParam OrderStatus orderStatus) {
         OrderWithUserResponseDto orderWithUserResponseDto = orderService.updateOrderStatus(orderId, orderStatus);

@@ -18,4 +18,5 @@ public record UpdateOrderRequestDto(
         @Valid
         @NotEmpty(message = "An order must contains at least 1 item")
         List<OrderItemDto> items
-) {}
+) {
+}

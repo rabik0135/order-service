@@ -66,7 +66,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponseDto> handleGlobalException(Exception ex, HttpServletRequest request) {
         ErrorResponseDto errorResponseDto = ErrorResponseDto.builder()
                 .path(request.getRequestURI())
-                .errorMessage("An internal error occurred")
+                .errorMessage(ex.getMessage())
                 .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
                 .timestamp(LocalDateTime.now())
                 .build();

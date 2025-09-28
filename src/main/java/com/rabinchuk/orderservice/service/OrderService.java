@@ -13,6 +13,8 @@ public interface OrderService extends CRUDService<OrderWithUserResponseDto, Crea
 
     List<OrderWithUserResponseDto> getByUserId(Long userId);
 
+    List<OrderWithUserResponseDto> getByUserEmail(String email);
+
     OrderWithUserResponseDto updateOrderStatus(Long orderId, OrderStatus orderStatus);
 
 }

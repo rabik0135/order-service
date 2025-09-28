@@ -16,5 +16,5 @@ public record ItemResponseDto(
 
         @Schema(description = "Price of the item", example = "1299.99")
         BigDecimal price
-){
+) {
 }

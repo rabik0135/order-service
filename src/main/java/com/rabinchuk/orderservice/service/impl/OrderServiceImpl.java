@@ -116,6 +116,17 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    public List<OrderWithUserResponseDto> getByUserEmail(String email) {
+        UserResponseDto userResponseDto = userClient.getUserByEmail(email);
+        if (userResponseDto == null) {
+            throw new EntityNotFoundException("User with email " + email + " not found");
+        }
+
+        List<Order> orders = orderRepository.findAllByUserId(userResponseDto.id());
+        return enrichOrdersWithUserData(orders);
+    }
+
+    @Override
     @Transactional
     public OrderWithUserResponseDto updateOrderStatus(Long orderId, OrderStatus orderStatus) {
         Order order = orderRepository.findById(orderId).orElseThrow(
@@ -175,7 +186,7 @@ public class OrderServiceImpl implements OrderService {
             throw new EntityNotFoundException("Some items were not found");
         }
 
-        Map<Long, Item> itemMap =  foundItems.stream()
+        Map<Long, Item> itemMap = foundItems.stream()
                 .collect(Collectors.toMap(Item::getId, item -> item));
 
         return orderItemDtos.stream()

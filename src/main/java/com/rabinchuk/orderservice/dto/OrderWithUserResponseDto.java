@@ -9,4 +9,5 @@ public record OrderWithUserResponseDto(
 
         @Schema(description = "Details of the user associated with the order")
         UserResponseDto user
-) {}
+) {
+}
