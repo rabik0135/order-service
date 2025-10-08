@@ -23,6 +23,31 @@ spring:
       health:
         probes:
           enabled: true
+  kafka:
+    bootstrap-servers: localhost:9094
+    consumer:
+      group-id: order-service-group
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring:
+          json:
+            trusted:
+              packages: "*"
+            add:
+              type:
+                headers: true
+            type:
+              mapping: "com.rabinchuk.paymentservice.dto.PaymentCreatedEvent:com.rabinchuk.orderservice.dto.PaymentCreatedEvent"
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        spring:
+          json:
+            add:
+              type:
+                headers: true
 
 user-service:
   url: http://user-service:8080

@@ -1,7 +1,9 @@
 package com.rabinchuk.orderservice.service.impl;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabinchuk.orderservice.client.UserClient;
 import com.rabinchuk.orderservice.dto.CreateOrderRequestDto;
+import com.rabinchuk.orderservice.dto.OrderCreatedEvent;
 import com.rabinchuk.orderservice.dto.OrderItemDto;
 import com.rabinchuk.orderservice.dto.OrderResponseDto;
 import com.rabinchuk.orderservice.dto.OrderWithUserResponseDto;
@@ -12,14 +14,20 @@ import com.rabinchuk.orderservice.model.Item;
 import com.rabinchuk.orderservice.model.Order;
 import com.rabinchuk.orderservice.model.OrderItem;
 import com.rabinchuk.orderservice.model.OrderStatus;
+import com.rabinchuk.orderservice.outbox.EventStatus;
+import com.rabinchuk.orderservice.outbox.OutboxOrders;
+import com.rabinchuk.orderservice.outbox.OutboxOrdersRepository;
 import com.rabinchuk.orderservice.repository.ItemRepository;
 import com.rabinchuk.orderservice.repository.OrderRepository;
 import com.rabinchuk.orderservice.service.OrderService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +42,8 @@ public class OrderServiceImpl implements OrderService {
     private final OrderRepository orderRepository;
     private final OrderMapper orderMapper;
     private final UserClient userClient;
+    private final OutboxOrdersRepository outboxOrdersRepository;
+    private final ObjectMapper objectMapper;
 
 
     @Override
@@ -61,6 +71,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
+    @SneakyThrows
     public OrderWithUserResponseDto create(CreateOrderRequestDto requestDto) {
         Order order = Order.builder()
                 .userId(requestDto.userId())
@@ -72,7 +83,30 @@ public class OrderServiceImpl implements OrderService {
         order.setOrderItems(orderItems);
 
         Order savedOrder = orderRepository.save(order);
+
+        BigDecimal paymentAmount = calculatePaymentAmount(orderItems);
+        OrderCreatedEvent orderCreatedEvent = OrderCreatedEvent.builder()
+                .orderId(savedOrder.getId())
+                .userId(savedOrder.getUserId())
+                .paymentAmount(paymentAmount)
+                .build();
+
+        OutboxOrders event = OutboxOrders.builder()
+                .orderId(savedOrder.getId())
+                .topic("order-created-topic")
+                .payload(objectMapper.writeValueAsString(orderCreatedEvent))
+                .status(EventStatus.PENDING)
+                .createdAt(LocalDateTime.now())
+                .build();
+        outboxOrdersRepository.save(event);
+
         return enrichOrdersWithUserData(List.of(savedOrder)).getFirst();
+    }
+
+    private BigDecimal calculatePaymentAmount(Set<OrderItem> orderItems) {
+        return orderItems.stream()
+                .map(item -> item.getItem().getPrice().multiply(new BigDecimal(item.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     @Override
