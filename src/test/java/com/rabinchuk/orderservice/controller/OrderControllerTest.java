@@ -173,7 +173,7 @@ public class OrderControllerTest extends AbstractIntegrationTest {
         @DisplayName("Update order status")
         public void testUpdateOrderStatus() throws Exception {
             mockMvc.perform(put("/api/orders/updateStatus/1")
-                            .param("orderStatus", "DELIVERED")
+                            .param("orderStatus", "PROCESSING")
                             .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk())
                     .andExpect(content().json(AbstractIntegrationTest.readStringFromSource("json/happy/update_order_status_response.json"), false));
@@ -248,7 +248,7 @@ public class OrderControllerTest extends AbstractIntegrationTest {
         @Test
         @DisplayName("Get orders by statuses should return empty list")
         public void testGetByStatusesShouldReturnEmptyList() throws Exception {
-            mockMvc.perform(get("/api/orders/getByStatuses?statuses=DELIVERED"))
+            mockMvc.perform(get("/api/orders/getByStatuses?statuses=PROCESSING"))
                     .andExpect(status().isOk())
                     .andExpect(content().json(AbstractIntegrationTest.readStringFromSource("json/error/blank_list_response.json"), false));
         }
@@ -275,7 +275,7 @@ public class OrderControllerTest extends AbstractIntegrationTest {
         @DisplayName("Update order status by invalid id should return exception")
         public void testUpdateOrderStatusByInvalidIdShouldReturnException() throws Exception {
             mockMvc.perform(put("/api/orders/updateStatus/1321")
-                            .param("orderStatus", "DELIVERED")
+                            .param("orderStatus", "PROCESSING")
                             .contentType(MediaType.APPLICATION_JSON))
                     .andExpect(status().isNotFound())
                     .andExpect(content().json(AbstractIntegrationTest.readStringFromSource("json/error/update_order_status_not_found_response.json"), false));

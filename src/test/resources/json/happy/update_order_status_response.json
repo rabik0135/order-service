@@ -2,7 +2,7 @@
   "order": {
     "id": 1,
     "userId": 1,
-    "status": "DELIVERED",
+    "status": "PROCESSING",
     "items": [
       {
         "item": {

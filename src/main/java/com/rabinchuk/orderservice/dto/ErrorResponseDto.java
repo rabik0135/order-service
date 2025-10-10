@@ -21,8 +21,8 @@ public record ErrorResponseDto(
         @Schema(description = "Timestamp of when the error occurred")
         LocalDateTime timestamp,
 
-/*        @Schema(description = "A map of validation errors, where the key is the field name and the value is the error message",
-                example = "{\"email\": \"Invalid email format\", \"name\": \"Name is required\"}", nullable = true)*/
+        @Schema(description = "A map of validation errors, where the key is the field name and the value is the error message",
+                example = "{\"email\": \"Invalid email format\", \"name\": \"Name is required\"}", nullable = true)
         Map<String, String> errors
 ) {
 }

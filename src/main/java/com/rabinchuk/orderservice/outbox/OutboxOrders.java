@@ -36,7 +36,7 @@ public class OutboxOrders {
     private Long id;
 
     @Column(name = "order_id")
-    private long orderId;
+    private Long orderId;
 
     private String topic;
 

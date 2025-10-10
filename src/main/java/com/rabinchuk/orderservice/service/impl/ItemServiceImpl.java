@@ -2,11 +2,11 @@ package com.rabinchuk.orderservice.service.impl;
 
 import com.rabinchuk.orderservice.dto.ItemRequestDto;
 import com.rabinchuk.orderservice.dto.ItemResponseDto;
+import com.rabinchuk.orderservice.exception.ExceptionFactory;
 import com.rabinchuk.orderservice.mapper.ItemMapper;
 import com.rabinchuk.orderservice.model.Item;
 import com.rabinchuk.orderservice.repository.ItemRepository;
 import com.rabinchuk.orderservice.service.ItemService;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,7 +33,7 @@ public class ItemServiceImpl implements ItemService {
     @Transactional(readOnly = true)
     public ItemResponseDto getById(Long id) {
         Item item = itemRepository.findById(id).orElseThrow(
-                () -> new EntityNotFoundException("Item with id " + id + " not found")
+                () -> ExceptionFactory.itemNotFoundException(id)
         );
         return itemMapper.toDto(item);
     }
@@ -58,7 +58,7 @@ public class ItemServiceImpl implements ItemService {
     @Transactional
     public ItemResponseDto updateById(Long id, ItemRequestDto itemRequestDto) {
         Item existingItem = itemRepository.findById(id).orElseThrow(
-                () -> new EntityNotFoundException("Item with id " + id + " not found")
+                () -> ExceptionFactory.itemNotFoundException(id)
         );
         itemMapper.updateItemFromDto(itemRequestDto, existingItem);
         itemRepository.save(existingItem);
@@ -69,7 +69,7 @@ public class ItemServiceImpl implements ItemService {
     @Transactional
     public void deleteById(Long id) {
         if (!itemRepository.existsById(id)) {
-            throw new EntityNotFoundException("Item with id " + id + " not found");
+            throw ExceptionFactory.itemNotFoundException(id);
         }
         itemRepository.deleteById(id);
     }

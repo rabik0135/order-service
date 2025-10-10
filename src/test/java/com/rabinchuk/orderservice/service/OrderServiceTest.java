@@ -1,5 +1,6 @@
 package com.rabinchuk.orderservice.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rabinchuk.orderservice.client.UserClient;
 import com.rabinchuk.orderservice.dto.CreateOrderRequestDto;
 import com.rabinchuk.orderservice.dto.ItemResponseDto;
@@ -9,11 +10,14 @@ import com.rabinchuk.orderservice.dto.OrderResponseDto;
 import com.rabinchuk.orderservice.dto.OrderWithUserResponseDto;
 import com.rabinchuk.orderservice.dto.UpdateOrderRequestDto;
 import com.rabinchuk.orderservice.dto.UserResponseDto;
+import com.rabinchuk.orderservice.mapper.EventMapper;
 import com.rabinchuk.orderservice.mapper.OrderMapper;
+import com.rabinchuk.orderservice.mapper.OutboxOrdersMapper;
 import com.rabinchuk.orderservice.model.Item;
 import com.rabinchuk.orderservice.model.Order;
 import com.rabinchuk.orderservice.model.OrderItem;
 import com.rabinchuk.orderservice.model.OrderStatus;
+import com.rabinchuk.orderservice.outbox.OutboxOrdersRepository;
 import com.rabinchuk.orderservice.repository.ItemRepository;
 import com.rabinchuk.orderservice.repository.OrderRepository;
 import com.rabinchuk.orderservice.service.impl.OrderServiceImpl;
@@ -57,6 +61,18 @@ public class OrderServiceTest {
 
     @Mock
     private UserClient userClient;
+
+    @Mock
+    ObjectMapper objectMapper;
+
+    @Mock
+    EventMapper eventMapper;
+
+    @Mock
+    OutboxOrdersMapper outboxOrdersMapper;
+
+    @Mock
+    OutboxOrdersRepository outboxOrdersRepository;
 
     @InjectMocks
     private OrderServiceImpl orderService;
@@ -170,14 +186,19 @@ public class OrderServiceTest {
 
     @Test
     @DisplayName("Create order")
-    public void testCreateOrder() {
+    public void testCreateOrder() throws Exception {
         CreateOrderRequestDto createOrderRequestDto = CreateOrderRequestDto.builder()
                 .userId(1L)
                 .orderItems(List.of(new OrderItemDto(1L, 2)))
                 .build();
+        Order orderToSave = new Order();
+        orderToSave.setUserId(1L);
 
+        when(orderMapper.toEntity(any(CreateOrderRequestDto.class))).thenReturn(orderToSave);
         when(itemRepository.findAllById(List.of(1L))).thenReturn(List.of(item));
         when(orderRepository.save(any(Order.class))).thenReturn(order);
+        when(eventMapper.toOrderCreatedEvent(any(), any())).thenReturn(null);
+        when(outboxOrdersMapper.toEntity(any(), any(), any())).thenReturn(null);
         when(userClient.getUsersByIds(List.of(1L))).thenReturn(List.of(userResponseDto));
         when(orderMapper.toDto(order)).thenReturn(orderResponseDto);
 
@@ -186,6 +207,7 @@ public class OrderServiceTest {
         assertThat(result).isNotNull();
         assertThat(result).isEqualTo(orderWithUserResponseDto);
         verify(orderRepository, times(1)).save(any(Order.class));
+        verify(outboxOrdersRepository, times(1)).save(any());
         verify(userClient, times(1)).getUsersByIds(List.of(1L));
         verify(orderMapper, times(1)).toDto(order);
     }
@@ -204,7 +226,7 @@ public class OrderServiceTest {
         when(userClient.getUsersByIds(List.of(1L))).thenReturn(List.of(userResponseDto));
         when(orderMapper.toDto(order)).thenReturn(orderResponseDto);
 
-        OrderWithUserResponseDto result = orderService.updateById(1l, updateOrderRequestDto);
+        OrderWithUserResponseDto result = orderService.updateById(1L, updateOrderRequestDto);
 
         assertThat(result).isNotNull();
         assertThat(order.getOrderStatus()).isEqualTo(OrderStatus.PROCESSING);

@@ -18,6 +18,8 @@ import org.springframework.util.FileCopyUtils;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.utility.DockerImageName;
+import org.testcontainers.kafka.KafkaContainer;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -40,6 +42,9 @@ public abstract class AbstractIntegrationTest {
     @ServiceConnection
     static final PostgreSQLContainer<?> postgreSQLContainer = new PostgreSQLContainer<>("postgres:17");
 
+    @Container
+    static final KafkaContainer kafkaContainer = new KafkaContainer(DockerImageName.parse("apache/kafka:3.9.1"));
+
     @RegisterExtension
     protected static WireMockExtension wireMock = WireMockExtension.newInstance()
             .options(wireMockConfig().dynamicPort())
@@ -49,6 +54,8 @@ public abstract class AbstractIntegrationTest {
     static void configureProperties(DynamicPropertyRegistry registry) {
         registry.add("user-service.url", wireMock::baseUrl);
         registry.add("INTERNAL_KEY", () -> "test-key");
+
+        registry.add("spring.kafka.bootstrap-servers", kafkaContainer::getBootstrapServers);
     }
 
     protected static String readStringFromSource(String source) {

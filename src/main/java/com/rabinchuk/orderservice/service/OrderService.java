@@ -7,7 +7,9 @@ import com.rabinchuk.orderservice.model.OrderStatus;
 
 import java.util.List;
 
-public interface OrderService extends CRUDService<OrderWithUserResponseDto, CreateOrderRequestDto, UpdateOrderRequestDto> {
+public interface OrderService extends CRUDService<OrderWithUserResponseDto, CreateOrderRequestDto> {
+
+    OrderWithUserResponseDto updateById(Long id, UpdateOrderRequestDto  updateOrderRequestDto);
 
     List<OrderWithUserResponseDto> getByStatuses(List<OrderStatus> statuses);
 

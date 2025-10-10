@@ -9,26 +9,25 @@ import com.rabinchuk.orderservice.dto.OrderResponseDto;
 import com.rabinchuk.orderservice.dto.OrderWithUserResponseDto;
 import com.rabinchuk.orderservice.dto.UpdateOrderRequestDto;
 import com.rabinchuk.orderservice.dto.UserResponseDto;
+import com.rabinchuk.orderservice.exception.ExceptionFactory;
+import com.rabinchuk.orderservice.mapper.EventMapper;
 import com.rabinchuk.orderservice.mapper.OrderMapper;
+import com.rabinchuk.orderservice.mapper.OutboxOrdersMapper;
 import com.rabinchuk.orderservice.model.Item;
 import com.rabinchuk.orderservice.model.Order;
 import com.rabinchuk.orderservice.model.OrderItem;
 import com.rabinchuk.orderservice.model.OrderStatus;
-import com.rabinchuk.orderservice.outbox.EventStatus;
 import com.rabinchuk.orderservice.outbox.OutboxOrders;
 import com.rabinchuk.orderservice.outbox.OutboxOrdersRepository;
 import com.rabinchuk.orderservice.repository.ItemRepository;
 import com.rabinchuk.orderservice.repository.OrderRepository;
 import com.rabinchuk.orderservice.service.OrderService;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -44,6 +43,8 @@ public class OrderServiceImpl implements OrderService {
     private final UserClient userClient;
     private final OutboxOrdersRepository outboxOrdersRepository;
     private final ObjectMapper objectMapper;
+    private final EventMapper eventMapper;
+    private final OutboxOrdersMapper outboxOrdersMapper;
 
 
     @Override
@@ -57,7 +58,7 @@ public class OrderServiceImpl implements OrderService {
     @Transactional(readOnly = true)
     public OrderWithUserResponseDto getById(Long id) {
         Order order = orderRepository.findById(id).orElseThrow(
-                () -> new EntityNotFoundException("Order with id " + id + " not found")
+                () -> ExceptionFactory.orderNotFoundException(id)
         );
         return enrichOrdersWithUserData(List.of(order)).getFirst();
     }
@@ -73,11 +74,7 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     @SneakyThrows
     public OrderWithUserResponseDto create(CreateOrderRequestDto requestDto) {
-        Order order = Order.builder()
-                .userId(requestDto.userId())
-                .orderStatus(OrderStatus.CREATED)
-                .creationDate(LocalDateTime.now())
-                .build();
+        Order order = orderMapper.toEntity(requestDto);
 
         Set<OrderItem> orderItems = processOrderItems(requestDto.orderItems(), order);
         order.setOrderItems(orderItems);
@@ -85,19 +82,9 @@ public class OrderServiceImpl implements OrderService {
         Order savedOrder = orderRepository.save(order);
 
         BigDecimal paymentAmount = calculatePaymentAmount(orderItems);
-        OrderCreatedEvent orderCreatedEvent = OrderCreatedEvent.builder()
-                .orderId(savedOrder.getId())
-                .userId(savedOrder.getUserId())
-                .paymentAmount(paymentAmount)
-                .build();
+        OrderCreatedEvent orderCreatedEvent = eventMapper.toOrderCreatedEvent(savedOrder, paymentAmount);
 
-        OutboxOrders event = OutboxOrders.builder()
-                .orderId(savedOrder.getId())
-                .topic("order-created-topic")
-                .payload(objectMapper.writeValueAsString(orderCreatedEvent))
-                .status(EventStatus.PENDING)
-                .createdAt(LocalDateTime.now())
-                .build();
+        OutboxOrders event = outboxOrdersMapper.toEntity(savedOrder, orderCreatedEvent, objectMapper);
         outboxOrdersRepository.save(event);
 
         return enrichOrdersWithUserData(List.of(savedOrder)).getFirst();
@@ -113,7 +100,7 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public OrderWithUserResponseDto updateById(Long id, UpdateOrderRequestDto requestDto) {
         Order orderToUpdate = orderRepository.findById(id).orElseThrow(
-                () -> new EntityNotFoundException("Order with id " + id + " not found")
+                () -> ExceptionFactory.orderNotFoundException(id)
         );
 
         if (requestDto.orderStatus() != null) {
@@ -142,7 +129,7 @@ public class OrderServiceImpl implements OrderService {
     public List<OrderWithUserResponseDto> getByUserId(Long userId) {
         List<UserResponseDto> userResponseDto = userClient.getUsersByIds(List.of(userId));
         if (userResponseDto.isEmpty()) {
-            throw new EntityNotFoundException("User with id " + userId + " not found");
+            throw ExceptionFactory.userNotFoundException(userId);
         }
 
         List<Order> orders = orderRepository.findAllByUserId(userId);
@@ -153,7 +140,7 @@ public class OrderServiceImpl implements OrderService {
     public List<OrderWithUserResponseDto> getByUserEmail(String email) {
         UserResponseDto userResponseDto = userClient.getUserByEmail(email);
         if (userResponseDto == null) {
-            throw new EntityNotFoundException("User with email " + email + " not found");
+            throw ExceptionFactory.userNotFoundException(email);
         }
 
         List<Order> orders = orderRepository.findAllByUserId(userResponseDto.id());
@@ -164,7 +151,7 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public OrderWithUserResponseDto updateOrderStatus(Long orderId, OrderStatus orderStatus) {
         Order order = orderRepository.findById(orderId).orElseThrow(
-                () -> new EntityNotFoundException("Order with id " + orderId + " not found")
+                () -> ExceptionFactory.orderNotFoundException(orderId)
         );
         order.setOrderStatus(orderStatus);
 
@@ -175,7 +162,7 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public void deleteById(Long id) {
         if (!orderRepository.existsById(id)) {
-            throw new EntityNotFoundException("Order with id " + id + " not found");
+            throw ExceptionFactory.orderNotFoundException(id);
         }
         orderRepository.deleteById(id);
     }
@@ -191,7 +178,7 @@ public class OrderServiceImpl implements OrderService {
                 .toList();
 
         if (userIds.isEmpty()) {
-            throw new EntityNotFoundException("User with id " + userIds + " not found");
+            throw ExceptionFactory.usersNotFoundException();
         }
 
         Map<Long, UserResponseDto> userResponseDtoMap = userClient.getUsersByIds(userIds)
@@ -217,7 +204,7 @@ public class OrderServiceImpl implements OrderService {
                 .toList();
         List<Item> foundItems = itemRepository.findAllById(itemIds);
         if (foundItems.size() != itemIds.size()) {
-            throw new EntityNotFoundException("Some items were not found");
+            throw ExceptionFactory.itemsNotFoundException();
         }
 
         Map<Long, Item> itemMap = foundItems.stream()
