@@ -1,0 +1,9 @@
+{
+  "path": "/api/orders/1321",
+  "errorMessage": "Validation Failed",
+  "statusCode": 400,
+  "errors": {
+    "items[0].quantity": "Quantity is required",
+    "items[0].itemId": "Item ID is required"
+  }
+}

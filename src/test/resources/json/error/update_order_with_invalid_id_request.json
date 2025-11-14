@@ -1,0 +1,9 @@
+{
+  "orderStatus": "PROCESSING",
+  "items": [
+    {
+      "itemId": 1,
+      "quantity": 2
+    }
+  ]
+}

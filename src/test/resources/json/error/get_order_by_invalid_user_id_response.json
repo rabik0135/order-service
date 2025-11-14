@@ -1,0 +1,6 @@
+{
+  "path": "/api/orders/getByUserId/12312",
+  "errorMessage": "User with id 12312 not found",
+  "statusCode": 404,
+  "errors": null
+}

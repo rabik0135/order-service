@@ -1,0 +1,52 @@
+networks:
+  default:
+    name: microservices-network
+    external: true
+
+services:
+  order-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: order-service:latest
+    container_name: order-service
+    ports:
+      - "8081:8081"
+    depends_on:
+      postgres-order-db:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://postgres-order-db:5432/${POSTGRES_ORDER_DB}"
+      SPRING_DATASOURCE_USERNAME: "${POSTGRES_USER}"
+      SPRING_DATASOURCE_PASSWORD: "${POSTGRES_PASSWORD}"
+      USER_SERVICE_URL: "http://user-service:8080/api/users"
+      MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE: health
+      MANAGEMENT_ENDPOINT_HEALTH_PROBES_ENABLED: true
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://order-service:8081/actuator/health" ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  postgres-order-db:
+    image: postgres:17
+    container_name: "postgres-order-db"
+    restart: "no"
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_order_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: ${POSTGRES_ORDER_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_ORDER_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_ORDER_DB}
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB" ]
+      interval: 10s
+      timeout: 5s
+      start_period: 10s
+      retries: 5
+
+volumes:
+  postgres_order_data:
